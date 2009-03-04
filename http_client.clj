@@ -4,6 +4,7 @@
            (org.apache.commons.httpclient.methods GetMethod PostMethod DeleteMethod 
                                                   TraceMethod HeadMethod PutMethod)))
 
+
 (defmacro send-method
   "Sends a request to the given method and client.  The reponse from the server is 
   stored in the method and any cookies are stored in the client.  The response and 
@@ -15,6 +16,16 @@
      ~@body
      (finally (.releaseConnection ~method))))
 
+(defn response-str
+  "Returns the response from the method as a string."
+  [method]
+  (.getResponseBodyAsString method))
+
+(defn scrape
+  [client method]
+  (send-method client method 
+    (response-str method)))
+
 (defn client 
   "Creates a HttpClient for the given server." 
   [server]
@@ -23,27 +34,26 @@
     c))
 
 (defn method
-  "Creates a commons-client method type object with the given path and method.  
-  A method can be one of: :post, :get, :put, :delete, :trace or :head.  If no 
-  method is supplied :get is the default.  You can supply a url-params hash like: 
+  "Creates a commons-client method type object with the given path and type.  
+  A type can be one of: :post, :get, :put, :delete, :trace or :head.  If no 
+  type is supplied :get is the default.  You can supply a url-params hash like: 
   {:login \"foo\" :password \"bar\"}."
-  ([path method-type url-params]
-   (let [key-method (cond 
+  ([path type url-params]
+   (let [key-type (cond 
                       (> (count url-params) 0) :post 
-                      (nil? method-type) :get 
-                      :else (keyword method-type))
+                      (nil? type) :get 
+                      :else (keyword type))
          m (cond 
-             (= :post key-method) (PostMethod. path)
-             (= :delete key-method) (DeleteMethod. path)
-             (= :put key-method) (PutMethod. path)
-             (= :trace key-method) (TraceMethod. path)
-             (= :head key-method) (HeadMethod. path)
-             (= :get key-method) (GetMethod. path)
+             (= :post key-type) (PostMethod. path)
+             (= :delete key-type) (DeleteMethod. path)
+             (= :put key-type) (PutMethod. path)
+             (= :trace key-type) (TraceMethod. path)
+             (= :head key-type) (HeadMethod. path)
              :else (GetMethod. path))]
      (doseq [[k v] url-params]
        (.addParameter m (name k) (str v)))
      m))
-  ([path method-type] (method path method-type nil)) 
+  ([path type] (method path type nil)) 
   ([path] (method path nil nil))) 
 
 (defn cookies
@@ -55,12 +65,6 @@
   "Prints the cookies from the client."
   [client]
   (doseq [c (cookies client)] (println c)))
-
-(defn response-str
-  "Returns the response from the method as a string."
-  [client]
-  [method]
-  (.getResponseBodyAsString method))
 
 (defn assert-cookie-names
   "Returns true if all of the given cookie-names exist in the client."
@@ -75,8 +79,6 @@
 
 ; Prints the HTML of the clojure.org website
 (let [client (client "http://www.clojure.org")
-      login (method "/")] 
-  (send-method client login   
-    (println (response-str login))))
-
+      home  (method "/")] 
+  (println (scrape client home)))  
 )

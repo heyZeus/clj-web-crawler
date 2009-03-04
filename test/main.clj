@@ -2,7 +2,8 @@
   (:require [http-client :as hc])
   (:use clojure.contrib.test-is))
 
-(def client (hc/client "http://www.clojure.org"))
+(def clj-client (hc/client "http://www.clojure.org"))
+(def home (hc/method "/"))
 
 (deftest client 
   (let [host "www.clojure.org"
@@ -22,5 +23,9 @@
      (is (= "POST" (.getName params-method)))
      (is (= "clojure" (.. params-method (getParameter "language") (getValue))))
      (is (= "yes" (.. params-method (getParameter "happy") (getValue))))))
+
+(deftest scrape
+  (let [html (hc/scrape clj-client home)]
+    (is (= (.contains html "Clojure")))))
 
 (run-tests)
