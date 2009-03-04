@@ -9,18 +9,18 @@
         client (hc/client (str "http://" host))]
     (is (= (.. client (getHostConfiguration) getHost) host))))
 
-(deftest uri
-   (let [default-get-uri (hc/uri "/")
-         path-post-uri (hc/uri "/api" :post)
-         params-uri (hc/uri "/" :get {:language "clojure" :happy "yes"})]
-     (is (= "GET" (.getName default-get-uri)))
-     (is (= "/" (.getPath default-get-uri)))
+(deftest method
+   (let [default-get-method (hc/method "/")
+         path-post-method (hc/method "/api" :post)
+         params-method (hc/method "/" :get {:language "clojure" :happy "yes"})]
+     (is (= "GET" (.getName default-get-method)))
+     (is (= "/" (.getPath default-get-method)))
 
-     (is (= "POST" (.getName path-post-uri)))
-     (is (= "/api" (.getPath path-post-uri)))
+     (is (= "POST" (.getName path-post-method)))
+     (is (= "/api" (.getPath path-post-method)))
 
-     (is (= "POST" (.getName params-uri)))
-     (is (= "clojure" (.. params-uri (getParameter "language") (getValue))))
-     (is (= "yes" (.. params-uri (getParameter "happy") (getValue))))))
+     (is (= "POST" (.getName params-method)))
+     (is (= "clojure" (.. params-method (getParameter "language") (getValue))))
+     (is (= "yes" (.. params-method (getParameter "happy") (getValue))))))
 
 (run-tests)
