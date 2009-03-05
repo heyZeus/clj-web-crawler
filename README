@@ -1,1 +1,44 @@
 http-client is a wrapper around Apache commons-client for the Clojure programming language.
+
+USAGE
+; Prints the HTML of the clojure.org website
+(let [server (client "http://www.clojure.org")
+   home  (method "/")] 
+   (println (scrape server home)))  
+
+; If you don't care about the HTML from the query you should just call
+; send-method. In this example you are posting the login form and need 
+; to make sure a cookie is set to validate the login was successful.
+(let [server (client "http://www.example.com")
+      login  (method "/accounts/login" :post {:login "mr_cool" :password "clojurerox"})] 
+  (send-method server login) 
+  (if (assert-cookie-name server "username")  
+    (println "yeah, I'm in")
+    (println "i can't remember my password again!")))
+
+; You can also pass in a body to the send-method macro to do something
+; like check the response status code. Note you can't check the response
+; code outside of the send-method call since all associated resources are
+; released at that point.
+(let [server (client "http://www.clojure.org")
+      login  (method "/")]
+  (send-method server login 
+    (println (.getStatusCode login))))
+
+I've only implemented some basic functionality to make the commons-client
+more "in line" with functional programming.  There is lots of things that
+could be added to this Clojure wrapper and I've just scratched the surface.
+
+Since I'm calling commons-client under the covers I've using the underlying
+naming conventions.  The client function returns a 
+org.apache.commons.httpclient.HttpClient and the method function returns 
+an implementation of org.apache.commons.httpclient.HttpMethodBase.  Please
+see the commons-client API docs for reference.
+
+
+REQUIREMENTS
+- clojure-contrib
+- Apache commons-client 3.1 and it's dependencies (only tested with the 3.1 version)
+
+
+Any comments, suggestions, improvements are welcome! 

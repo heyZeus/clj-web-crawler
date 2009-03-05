@@ -1,8 +1,9 @@
 (ns http-client
-  (:import (org.apache.commons.httpclient HttpClient NameValuePair URI)
+  (:import (org.apache.commons.httpclient HttpClient NameValuePair URI HttpStatus)
            (org.apache.commons.httpclient.cookie CookiePolicy CookieSpec)
            (org.apache.commons.httpclient.methods GetMethod PostMethod DeleteMethod 
-                                                  TraceMethod HeadMethod PutMethod)))
+                                                  TraceMethod HeadMethod PutMethod))
+  (:use [clojure.contrib.duck-streams :only (slurp*)]))
 
 
 (defmacro send-method
@@ -19,12 +20,26 @@
 (defn response-str
   "Returns the response from the method as a string."
   [method]
-  (.getResponseBodyAsString method))
+  ; uses slurp* here otherwise we get a annoying warning from commons-client
+  (slurp* (.getResponseBodyAsStream method)))
 
-(defn scrape
-  [client method]
-  (send-method client method 
-    (response-str method)))
+(defmacro scrape
+  "Returns the HTML as a string. It will free up any resources associated 
+  with the method. If the resulting page is a redirect the redirect page 
+  will be returned.  Also the optional body will be run against the 
+  redirected page."
+  [client method & body]
+  `(send-method ~client ~method
+    (let [location# (redirect-location ~method)]
+      (if location#
+        (do 
+          (let [redirect-method# (method location#)]
+            (send-method ~client redirect-method#
+              ~@body
+              (response-str redirect-method#))))
+        (do 
+          ~@body
+          (response-str ~method))))))
 
 (defn client 
   "Creates a HttpClient for the given server." 
@@ -74,11 +89,45 @@
               (some #(= exp-cookie-name (.getName %1)) actual-cookies))
             cookie-names)))
 
+(defn redirect-location
+  "Returns the redirection location string in the method, nil or false if
+  not being redirected."
+  [method]
+  (let [status-code (.getStatusCode method)
+        header (.getResponseHeader method "location")]
+    (if (or (= status-code (HttpStatus/SC_MOVED_TEMPORARILY))
+            (= status-code (HttpStatus/SC_MOVED_PERMANENTLY))
+            (= status-code (HttpStatus/SC_SEE_OTHER))
+            (= status-code (HttpStatus/SC_TEMPORARY_REDIRECT)))
+      (if-let [location (and header (.getValue header))]
+        location))))
 
 (comment 
 
 ; Prints the HTML of the clojure.org website
-(let [client (client "http://www.clojure.org")
+(let [server (client "http://www.clojure.org")
       home  (method "/")] 
-  (println (scrape client home)))  
+  (println (scrape server home)))  
+
+; If you don't care about the HTML from the query you should just call
+; send-method. In this example you are posting the login form and need 
+; to make sure a cookie is set to validate the login was successful.
+(let [server (client "http://www.example.com")
+      login  (method "/accounts/login" :post {:login "mr_cool" :password "clojurerox"})] 
+  (send-method server login) 
+  (if (assert-cookie-name server "username")  
+    (println "yeah, I'm in")
+    (println "i can't remember my password again!")))
+
+; You can also pass in a body to the send-method macro to do something
+; like check the response status code. Note you can't check the response
+; code outside of the send-method call since all associated resources are
+; released at that point.
+(let [server (client "http://www.clojure.org")
+             login  (method "/")]
+  (send-method server login 
+    (println (.getStatusCode login))))
+
 )
+
+
