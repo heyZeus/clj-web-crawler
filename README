@@ -12,7 +12,7 @@ USAGE
 (let [server (client "http://www.example.com")
       login  (method "/accounts/login" :post {:login "mr_cool" :password "clojurerox"})] 
   (send-method server login) 
-  (if (assert-cookie-name server "username")  
+  (if (assert-cookie-names server "username")  
     (println "yeah, I'm in")
     (println "i can't remember my password again!")))
 
@@ -26,8 +26,8 @@ USAGE
     (println (.getStatusCode login))))
 
 I've only implemented some basic functionality to make the commons-client
-more "in line" with functional programming.  There is lots of things that
-could be added to this Clojure wrapper and I've just scratched the surface.
+more "in line" with functional programming.  There are lots of things that
+could be added to this Clojure wrapper.  I've just scratched the surface.
 
 Since I'm calling commons-client under the covers I've using the underlying
 naming conventions.  The client function returns a 
@@ -38,7 +38,7 @@ see the commons-client API docs for reference.
 
 REQUIREMENTS
 - clojure-contrib
-- Apache commons-client 3.1 and it's dependencies (only tested with the 3.1 version)
+- Apache commons-client 3.1 and its dependencies (only tested with the 3.1 version)
 
 
 Any comments, suggestions, improvements are welcome! 

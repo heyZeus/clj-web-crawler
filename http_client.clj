@@ -115,7 +115,7 @@
 (let [server (client "http://www.example.com")
       login  (method "/accounts/login" :post {:login "mr_cool" :password "clojurerox"})] 
   (send-method server login) 
-  (if (assert-cookie-name server "username")  
+  (if (assert-cookie-names server "username")  
     (println "yeah, I'm in")
     (println "i can't remember my password again!")))
 
