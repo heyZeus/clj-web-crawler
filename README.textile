@@ -4,8 +4,7 @@ commons-client Java library.
 
 h3. Usage 
 
-@
-; Prints the HTML of the clojure.org website
+@; Prints the HTML of the clojure.org website
 (let [clj-ws (client "http://www.clojure.org")
       home  (method "/")] 
    (println (scrape clj-ws home)))  
@@ -29,8 +28,7 @@ h3. Usage
 (let [clj-ws (client "http://www.clojure.org")
       home  (method "/")]
   (send-method clj-ws home 
-    (println (.getStatusCode home))))
-@
+    (println (.getStatusCode home))))@
 
 I've only implemented some basic functionality to make the commons-client
 more "in line" with functional programming.  There are lots of things that
