@@ -45,8 +45,8 @@ see the commons-client API docs for reference.
 
 h3. Requirements 
 
-- clojure-contrib
-- Apache commons-client 3.1 and its dependencies (only tested with the 3.1 version)
+* clojure-contrib
+* Apache commons-client 3.1 and its dependencies (only tested with the 3.1 version)
 
 
 Any comments, suggestions, improvements are welcome! 
