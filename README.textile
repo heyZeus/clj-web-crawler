@@ -3,6 +3,7 @@ your own computer.  This Clojure script is a wrapper around the Apache
 commons-client Java library. 
 
 h3. Usage 
+
 @
 ; Prints the HTML of the clojure.org website
 (let [clj-ws (client "http://www.clojure.org")
