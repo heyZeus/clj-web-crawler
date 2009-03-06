@@ -1,18 +1,20 @@
-http-client is a wrapper around Apache commons-client for the Clojure programming language.
+clj-web-crawler allows you to easily crawl and scrape the web from the comfort of 
+your own computer.  This Clojure script is a wrapper around the Apache 
+commons-client Java library. 
 
 USAGE
 ; Prints the HTML of the clojure.org website
-(let [server (client "http://www.clojure.org")
-   home  (method "/")] 
-   (println (scrape server home)))  
+(let [clj-ws (client "http://www.clojure.org")
+      home  (method "/")] 
+   (println (scrape clj-ws home)))  
 
 ; If you don't care about the HTML from the query you should just call
 ; send-method. In this example you are posting the login form and need 
 ; to make sure a cookie is set to validate the login was successful.
-(let [server (client "http://www.example.com")
+(let [site (client "http://www.example.com")
       login  (method "/accounts/login" :post {:login "mr_cool" :password "clojurerox"})] 
-  (send-method server login) 
-  (if (assert-cookie-names server "username")  
+  (send-method site login) 
+  (if (assert-cookie-names site "username")  
     (println "yeah, I'm in")
     (println "i can't remember my password again!")))
 
@@ -20,9 +22,9 @@ USAGE
 ; like check the response status code. Note you can't check the response
 ; code outside of the send-method call since all associated resources are
 ; released at that point.
-(let [server (client "http://www.clojure.org")
+(let [clj-ws (client "http://www.clojure.org")
       login  (method "/")]
-  (send-method server login 
+  (send-method clj-ws login 
     (println (.getStatusCode login))))
 
 I've only implemented some basic functionality to make the commons-client

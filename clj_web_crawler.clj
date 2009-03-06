@@ -1,4 +1,4 @@
-(ns http-client
+(ns clj-web-crawler
   (:import (org.apache.commons.httpclient HttpClient NameValuePair URI HttpStatus)
            (org.apache.commons.httpclient.cookie CookiePolicy CookieSpec)
            (org.apache.commons.httpclient.methods GetMethod PostMethod DeleteMethod 
@@ -43,9 +43,9 @@
 
 (defn client 
   "Creates a HttpClient for the given server." 
-  [server]
+  [host]
   (let [c (HttpClient.)]
-    (.. c (getHostConfiguration) (setHost (URI. server true)))
+    (.. c (getHostConfiguration) (setHost (URI. host true)))
     c))
 
 (defn method

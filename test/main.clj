@@ -1,19 +1,19 @@
-(ns http-client.test.main
-  (:require [http-client :as hc])
+(ns clj-web-crawler.test.main
+  (:require [clj-web-crawler :as wc])
   (:use clojure.contrib.test-is))
 
-(def clj-client (hc/client "http://www.clojure.org"))
-(def home (hc/method "/"))
+(def clj-ws (wc/client "http://www.clojure.org"))
+(def home (wc/method "/"))
 
 (deftest client 
   (let [host "www.clojure.org"
-        client (hc/client (str "http://" host))]
-    (is (= (.. client (getHostConfiguration) getHost) host))))
+        clj-ws (wc/client (str "http://" host))]
+    (is (= (.. clj-ws (getHostConfiguration) getHost) host))))
 
 (deftest method
-   (let [default-get-method (hc/method "/")
-         path-post-method (hc/method "/api" :post)
-         params-method (hc/method "/" :get {:language "clojure" :happy "yes"})]
+   (let [default-get-method (wc/method "/")
+         path-post-method (wc/method "/api" :post)
+         params-method (wc/method "/" :get {:language "clojure" :happy "yes"})]
      (is (= "GET" (.getName default-get-method)))
      (is (= "/" (.getPath default-get-method)))
 
@@ -25,7 +25,7 @@
      (is (= "yes" (.. params-method (getParameter "happy") (getValue))))))
 
 (deftest scrape
-  (let [html (hc/scrape clj-client home)]
+  (let [html (wc/scrape clj-ws home)]
     (is (= (.contains html "Clojure")))))
 
 (run-tests)
