@@ -2,7 +2,7 @@
 your own computer.  This Clojure script is a wrapper around the Apache 
 commons-client Java library. 
 
-h2. Usage 2
+h2. Usage H2
 ; Prints the HTML of the clojure.org website
 (let [clj-ws (client "http://www.clojure.org")
       home  (method "/")] 
@@ -41,7 +41,7 @@ an implementation of org.apache.commons.httpclient.HttpMethodBase.  Please
 see the commons-client API docs for reference.
 
 
-h2. Requirements 2
+h2. Requirements H2
 - clojure-contrib
 - Apache commons-client 3.1 and its dependencies (only tested with the 3.1 version)
 
