@@ -28,18 +28,21 @@
   with the method. If the resulting page is a redirect the redirect page 
   will be returned.  Also the optional body will be run against the 
   redirected page."
-  [client method & body]
-  `(send-method ~client ~method
-    (let [location# (redirect-location ~method)]
-      (if location#
-        (do 
-          (let [redirect-method# (method location#)]
-            (send-method ~client redirect-method#
-              ~@body
-              (response-str redirect-method#))))
+  ([server http-method & body]
+  `(let [s# (if (= String (class ~server)) (client ~server) ~server)
+         m# (if (= String (class ~http-method)) (method ~http-method) ~http-method)]
+    (send-method s# m#
+      (let [location# (redirect-location m#)]
+        (if location#
+          (do 
+            (let [redirect-method# (method location#)]
+              (send-method s# redirect-method#
+                ~@body
+                (response-str redirect-method#))))
         (do 
           ~@body
-          (response-str ~method))))))
+          (response-str m#)))))))
+  ([server] (scrape server "/")))
 
 (defn client 
   "Creates a HttpClient for the given server." 
@@ -101,33 +104,4 @@
             (= status-code (HttpStatus/SC_TEMPORARY_REDIRECT)))
       (if-let [location (and header (.getValue header))]
         location))))
-
-(comment 
-
-; Prints the HTML of the clojure.org website
-(let [server (client "http://www.clojure.org")
-      home  (method "/")] 
-  (println (scrape server home)))  
-
-; If you don't care about the HTML from the query you should just call
-; send-method. In this example you are posting the login form and need 
-; to make sure a cookie is set to validate the login was successful.
-(let [server (client "http://www.example.com")
-      login  (method "/accounts/login" :post {:login "mr_cool" :password "clojurerox"})] 
-  (send-method server login) 
-  (if (assert-cookie-names server "username")  
-    (println "yeah, I'm in")
-    (println "i can't remember my password again!")))
-
-; You can also pass in a body to the send-method macro to do something
-; like check the response status code. Note you can't check the response
-; code outside of the send-method call since all associated resources are
-; released at that point.
-(let [server (client "http://www.clojure.org")
-             login  (method "/")]
-  (send-method server login 
-    (println (.getStatusCode login))))
-
-)
-
 

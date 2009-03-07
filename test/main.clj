@@ -27,7 +27,10 @@
 
 (deftest scrape
   (let [html (wc/scrape clj-ws home)]
-    (is (= (.contains html clj-home-page-text)))))
+    (is (.contains html clj-home-page-text)))
+  (is (.contains (wc/scrape "http://www.clojure.org") clj-home-page-text))
+  (is (.contains (wc/scrape "http://www.clojure.org" "/api") "API")))
+
 
 ; this test depends on a website that i don't have any control over,  
 ; this test is fragile, but better than no test
