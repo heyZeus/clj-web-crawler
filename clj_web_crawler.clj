@@ -5,17 +5,6 @@
                                                   TraceMethod HeadMethod PutMethod))
   (:use [clojure.contrib.duck-streams :only (slurp*)]))
 
-(defmacro send-method 
-  "Sends a request to the given method and client.  The reponse from the server is 
-  stored in the method and any cookies are stored in the client.  The response and 
-  any resources associated with the request are cleared from the method after this
-  function is called."
-  [client method & body]
-  `(try 
-     (.executeMethod ~client ~method)
-     ~@body
-     (finally (.releaseConnection ~method))))
-
 (defn response-str
   "Returns the response from the method as a string."
   [method]
@@ -46,22 +35,33 @@
   ([path type] (method path type nil)) 
   ([path] (method path nil nil))) 
 
-(defmacro crawl
-  "Returns the HTML as a string. It will free up any resources associated 
-  with the method. If the resulting page is a redirect the redirect page 
-  will be returned.  Also the optional body will be run against the 
-  redirected page."
-  ([server method & body]
-    `(send-method ~server ~method
-      (do ~@body)))
-  ([server] (crawl server (method "/"))))
-
 (defn client 
   "Creates a HttpClient for the given server." 
   [host]
   (let [c (HttpClient.)]
     (.. c (getHostConfiguration) (setHost (URI. host true)))
     c))
+
+(defmacro crawl
+  "Sends an HTTP request to the server. Pass in a body to examine
+  the status code, response, etc.  All resource associated with 
+  the method will be freed up at the end of the macro."
+  ([#^org.apache.commons.httpclient.HttpClient server 
+    #^org.apache.commons.httpclient.HttpMethodBase method & body]
+    `(try
+       (.executeMethod ~server ~method)
+       ~@body
+       (finally (.releaseConnection ~method))))
+  ([server] (crawl server (method "/"))))
+
+(defn crawl-response
+  "Returns the response as a string. Sends a GET request to the server."
+  ([#^String server #^String http-method]
+   (let [c (client server)
+         m (method http-method)]
+     (crawl c m
+       (response-str m))))
+  ([#^String server] (crawl-response server "/")))
 
 (defn cookies
   "Convience function to get the cookies from the client."

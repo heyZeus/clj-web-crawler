@@ -36,11 +36,14 @@
     (wc/crawl clj-ws api
       (is (.contains (wc/response-str api) "API")))))
 
+(deftest crawl-response
+   (is (.contains (wc/crawl-response "http://www.clojure.org") clj-home-page-text))
+   (is (.contains (wc/crawl-response "http://www.clojure.org" "/") clj-home-page-text)))
 
 ; this test depends on a website that i don't have any control over,  
 ; this test is fragile, but better than no test
 (deftest cookie-names
-  (wc/send-method clj-ws home)
+  (wc/crawl clj-ws home)
   ;(println "Cookies from clojure.org ") 
   ;(wc/print-cookies clj-ws)
   (is (wc/assert-cookie-names clj-ws "test" "master"))

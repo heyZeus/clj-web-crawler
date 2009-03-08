@@ -5,45 +5,38 @@ commons-client Java library.
 h3. Usage 
 
 <pre><code>
-; Prints the HTML of the clojure.org home page 
-(println (scrape "http://www.clojure.org"))
 
-; Prints the HTML of the clojure.org/api page 
-(println (scrape "http://www.clojure.org" "/api"))
-
-; scrape also accepts a client, a method and a body 
-; in the body of scrape, you can examine various things like the status code
+; The crawl macro also accepts a client, a method and a body. 
+; In the body of crawl, you can examine various things like 
+; the status code, the response, etc.
 (let [clj-ws (client "http://www.clojure.org")
       home  (method "/")] 
-   (println (scrape clj-ws home
-               (println  (.getStatusCode home)))))  
+  (crawl clj-ws home
+    (println (.getStatusCode home))  
+    (println (response-str home))))  
 
-
-; If you don't care about the HTML from the query you should just call
-; send-method. In this example you are posting the login form and need 
-; to make sure a cookie is set to validate the login was successful.
+; If you need to login to a website you can do that too and
+; verify any cookies are set to validate the login
 (let [site (client "http://www.example.com")
-      login  (method "/accounts/login" :post {:login "doctor_no" :password "clojurerox"})] 
-  (send-method site login) 
-  (if (assert-cookie-names site "username")  
-    (println "yeah, I'm in")
-    (println "I can't remember my password again!")))
+      login (method "/accounts/login" :post {:login "doctor_no" :password "clojurerox"})] 
+  (crawl site login 
+    (if (assert-cookie-names site "username" "logged-time")  
+      (println "yeah, I'm in")
+      (println "I can't remember my password again!"))))
 
+; the crawl-response function is for quick and dirty things and
+; just returns the response as a string from the server
+(println (crawl-response "http://www.clojure.org"))
 
-; You can also pass in a body to the send-method macro to do something
-; like check the response status code. Note you can't check the response
-; code outside of the send-method call since all associated resources have 
-; been released.
-(let [clj-ws (client "http://www.clojure.org")
-      home  (method "/")]
-  (send-method clj-ws home 
-    (println (.getStatusCode home))))
+; prints the HTML of the clojure.org/api page 
+(println (crawl-response "http://www.clojure.org" "/api"))
+
 </code></pre>
 
 
 I've only implemented some basic functionality to make the commons-client
-more "in line" with functional programming.  There are lots of things that
-could be added to this Clojure wrapper.  I've just scratched the surface.
+more in line with functional programming.  There are lots of things that
+could be added to this Clojure script.  I've just scratched the surface.
 
 Since I'm calling commons-client under the covers I've using the underlying
 naming conventions.  The client function returns a 
