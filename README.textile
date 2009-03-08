@@ -1,13 +1,12 @@
 h2. clj-web-crawler
 
-clj-web-crawler allows you to easily crawl the web from the comfort of 
-your own computer.  This Clojure script is a wrapper around the Apache 
+clj-web-crawler allows you to easily crawl the web from the comfort of your newfound Lisp 
+dialect that runs on the JVM, Clojure.  This Clojure script is a wrapper around the Apache 
 commons-client Java library. 
 
 h3. Usage 
 
 <pre><code>
-
 ; The crawl macro also accepts a client, a method and a body. 
 ; In the body of crawl, you can examine various things like 
 ; the status code, the response, etc.
