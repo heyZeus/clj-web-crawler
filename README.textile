@@ -1,4 +1,6 @@
-<b>clj-web-crawler</b> allows you to easily crawl and scrape the web from the comfort of 
+h2. clj-web-crawler
+
+clj-web-crawler allows you to easily crawl the web from the comfort of 
 your own computer.  This Clojure script is a wrapper around the Apache 
 commons-client Java library. 
 
@@ -18,7 +20,7 @@ h3. Usage
 ; If you need to login to a website you can do that too and
 ; verify any cookies are set to validate the login
 (let [site (client "http://www.example.com")
-      login (method "/accounts/login" :post {:login "doctor_no" :password "clojurerox"})] 
+      login (method "/accounts/login" :post {:login "doctor_no" :password "clojure"})] 
   (crawl site login 
     (if (assert-cookie-names site "username" "logged-time")  
       (println "yeah, I'm in")
