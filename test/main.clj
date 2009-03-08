@@ -37,8 +37,13 @@
       (is (.contains (wc/response-str api) "API")))))
 
 (deftest crawl-response
-   (is (.contains (wc/crawl-response "http://www.clojure.org") clj-home-page-text))
-   (is (.contains (wc/crawl-response "http://www.clojure.org" "/") clj-home-page-text)))
+   (is (.contains (wc/crawl-response "http://www.clojure.org" "/") clj-home-page-text))
+   (is (.contains (wc/crawl-response "http://www.clojure.org" "/api") "API"))
+   (is (.contains (wc/crawl-response (wc/client "http://www.clojure.org") (wc/method "/api")) 
+                  "API"))
+   (let [res (wc/crawl-response "http://www.ask.com" 
+                                (wc/method "/web" :post {:q "clojure"}))]
+     (is (.contains res "targets the Java Virtual Machine"))))
 
 ; this test depends on a website that i don't have any control over,  
 ; this test is fragile, but better than no test

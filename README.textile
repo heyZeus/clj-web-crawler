@@ -32,6 +32,9 @@ h3. Usage
 ; prints the HTML of the clojure.org/api page and always defaults to a GET request
 (println (crawl-response "http://www.clojure.org" "/api"))
 
+; you can also pass in a real method object 
+(println (crawl-response "http://www.example.com" (method "/do_login" :post {:login "me"}))
+
 </code></pre>
 
 

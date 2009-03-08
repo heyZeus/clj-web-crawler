@@ -5,11 +5,22 @@
                                                   TraceMethod HeadMethod PutMethod))
   (:use [clojure.contrib.duck-streams :only (slurp*)]))
 
-(defn response-str
-  "Returns the response from the method as a string."
+(defn redirect-location
+  "Returns the redirection location string in the method, nil or false if
+  not being redirected."
   [method]
-  ; uses slurp* here otherwise we get a annoying warning from commons-client
-  (slurp* (.getResponseBodyAsStream method)))
+  (let [status-code (.getStatusCode method)
+                    header (.getResponseHeader method "location")]
+    (if (or (= status-code (HttpStatus/SC_MOVED_TEMPORARILY))
+            (= status-code (HttpStatus/SC_MOVED_PERMANENTLY))
+            (= status-code (HttpStatus/SC_SEE_OTHER))
+            (= status-code (HttpStatus/SC_TEMPORARY_REDIRECT)))
+      (if-let [location (and header (.getValue header))]
+        (do
+          (println "redirect is " location)
+          (println "refresh is " (.getResponseHeader method "refresh"))
+          location)))))
+
 
 (defn method
   "Creates a commons-client method type object with the given path and type.  
@@ -54,14 +65,46 @@
        (finally (.releaseConnection ~method))))
   ([server] (crawl server (method "/"))))
 
-(defn crawl-response
-  "Returns the response as a string. Sends a GET request to the server."
-  ([#^String server #^String http-method]
+(defn response-str
+  "Returns the response from the method as a string."
+  ([method]
+   ; uses slurp* here otherwise we get a annoying warning from commons-client
+   (slurp* (.getResponseBodyAsStream method)))
+  ([method client]
+   (let [redirect (redirect-location method)
+         new-method (if redirect (method redirect))]
+     (if new-method 
+       (crawl client new-method
+         (response-str new-method))
+       (response-str method)))))
+
+(defmulti crawl-response (fn [server method] [(class server) (class method)]))
+
+(defmethod crawl-response 
+   [String String] [server http-method]
    (let [c (client server)
          m (method http-method)]
      (crawl c m
-       (response-str m))))
-  ([#^String server] (crawl-response server "/")))
+       (response-str m c))))
+
+(defmethod crawl-response 
+  [String org.apache.commons.httpclient.HttpMethodBase] [server http-method]
+  (let [c (client server)]
+    (crawl c http-method
+      (response-str http-method c))))
+
+(defmethod crawl-response 
+  [org.apache.commons.httpclient.HttpClient String] 
+  [server http-method]
+  (let [m (method http-method)]
+    (crawl server m
+      (response-str m server))))
+
+(defmethod crawl-response 
+  [org.apache.commons.httpclient.HttpClient org.apache.commons.httpclient.HttpMethodBase] 
+  [server http-method]
+  (crawl server http-method
+    (response-str http-method server)))
 
 (defn cookies
   "Convience function to get the cookies from the client."
@@ -81,16 +124,4 @@
               (some #(= exp-cookie-name (.getName %1)) actual-cookies))
             cookie-names)))
 
-(defn redirect-location
-  "Returns the redirection location string in the method, nil or false if
-  not being redirected."
-  [method]
-  (let [status-code (.getStatusCode method)
-        header (.getResponseHeader method "location")]
-    (if (or (= status-code (HttpStatus/SC_MOVED_TEMPORARILY))
-            (= status-code (HttpStatus/SC_MOVED_PERMANENTLY))
-            (= status-code (HttpStatus/SC_SEE_OTHER))
-            (= status-code (HttpStatus/SC_TEMPORARY_REDIRECT)))
-      (if-let [location (and header (.getValue header))]
-        location))))
 
