@@ -26,11 +26,11 @@ h3. Usage
       (println "yeah, I'm in")
       (println "I can't remember my password again!"))))
 
-; the crawl-response function is for quick and dirty things and
-; just returns the response as a string from the server
+; the crawl-response function is for quick and dirty things and just returns the 
+; response as a string from the server
 (println (crawl-response "http://www.clojure.org"))
 
-; prints the HTML of the clojure.org/api page 
+; prints the HTML of the clojure.org/api page and always defaults to a GET request
 (println (crawl-response "http://www.clojure.org" "/api"))
 
 </code></pre>
