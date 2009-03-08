@@ -21,15 +21,20 @@
      (is (= "POST" (.getName path-post-method)))
      (is (= "/api" (.getPath path-post-method)))
 
+     (is (= "/api" (.getPath (wc/method "api"))))
+
      (is (= "POST" (.getName params-method)))
      (is (= "clojure" (.. params-method (getParameter "language") (getValue))))
      (is (= "yes" (.. params-method (getParameter "happy") (getValue))))))
 
-(deftest scrape
-  (let [html (wc/scrape clj-ws home)]
-    (is (.contains html clj-home-page-text)))
-  (is (.contains (wc/scrape "http://www.clojure.org") clj-home-page-text))
-  (is (.contains (wc/scrape "http://www.clojure.org" "/api") "API")))
+(deftest crawl
+  (wc/crawl clj-ws home
+    (is (.contains (wc/response-str home) clj-home-page-text)))
+  (wc/crawl clj-ws home
+    (is (.contains (wc/response-str home) clj-home-page-text)))
+  (let [api (wc/method "/api")]
+    (wc/crawl clj-ws api
+      (is (.contains (wc/response-str api) "API")))))
 
 
 ; this test depends on a website that i don't have any control over,  
@@ -46,7 +51,8 @@
 (deftest redirect
   ; i setup this redirect at shorturl.com
   (let [redirect-site (wc/client "http://alturl.com/") 
-        home-page (wc/method "/yew")] 
-    (is (= (.contains (wc/scrape redirect-site home-page) clj-home-page-text))))) 
+        home (wc/method "/yew")] 
+    (wc/crawl redirect-site home
+      (is (.contains (wc/response-str home) clj-home-page-text))))) 
    
 (run-tests)
