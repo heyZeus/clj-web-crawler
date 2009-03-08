@@ -22,7 +22,7 @@ h3. Usage
 (let [site (client "http://www.example.com")
       login (method "/accounts/login" :post {:login "doctor_no" :password "clojure"})] 
   (crawl site login 
-    (if (assert-cookie-names site "username" "logged-time")  
+    (if (assert-cookie-names site "username" "logged-in")  
       (println "yeah, I'm in")
       (println "I can't remember my password again!"))))
 
@@ -38,7 +38,7 @@ h3. Usage
 
 I've only implemented some basic functionality to make the commons-client
 more in line with functional programming.  There are lots of things that
-could be added to this Clojure script.  I've just scratched the surface.
+could be added to this Clojure script. 
 
 Since I'm calling commons-client under the covers I've using the underlying
 naming conventions.  The client function returns a 
