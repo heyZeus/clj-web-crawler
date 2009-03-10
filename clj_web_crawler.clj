@@ -19,7 +19,7 @@
         location))))
 
 (defn to-str 
-  "Converts a value to a string, accounts for keywords"
+  "Converts a value to a string, accounts for keyword"
   [s] 
   (if (keyword? s) (name s) (str s)))
 
