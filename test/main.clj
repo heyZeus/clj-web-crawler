@@ -62,5 +62,14 @@
         home (wc/method "/yew")] 
     (wc/crawl redirect-site home
       (is (.contains (wc/response-str home) clj-home-page-text))))) 
+
+(deftest to-str
+  (is (= "blah" (wc/to-str "blah")))
+  (is (= "blah" (wc/to-str :blah)))
+  (is (= "2" (wc/to-str 2))))
+
+(deftest keys-values-to-strs
+  (is (= {"blah" "blah" "1" "2" "three" "four"} 
+         (wc/keys-values-to-strs {:blah :blah 1 2 "three" "four"}))))
    
 (run-tests)

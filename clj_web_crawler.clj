@@ -16,11 +16,17 @@
             (= status-code (HttpStatus/SC_SEE_OTHER))
             (= status-code (HttpStatus/SC_TEMPORARY_REDIRECT)))
       (if-let [location (and header (.getValue header))]
-        (do
-          (println "redirect is " location)
-          (println "refresh is " (.getResponseHeader method "refresh"))
-          location)))))
+        location))))
 
+(defn to-str 
+  "Converts a value to a string, accounts for keywords"
+  [s] 
+  (if (keyword? s) (name s) (str s)))
+
+(defn keys-values-to-strs
+  "Converts the given map keys and values to strings."
+  [map1]
+  (apply hash-map (mapcat (fn [[k v]] [(to-str k) (to-str v)]) map1))) 
 
 (defn method
   "Creates a commons-client method type object with the given path and type.  
@@ -40,8 +46,8 @@
              (= :trace key-type) (TraceMethod. p)
              (= :head key-type) (HeadMethod. p)
              :else (GetMethod. p))]
-     (doseq [[k v] url-params]
-       (.addParameter m (name k) (str v)))
+     (doseq [[k v] (keys-values-to-strs url-params)]
+       (.addParameter m k v))
      m))
   ([path type] (method path type nil)) 
   ([path] (method path nil nil))) 
