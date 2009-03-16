@@ -47,15 +47,6 @@
 
 ; this test depends on a website that i don't have any control over,  
 ; this test is fragile, but better than no test
-(deftest cookie-names
-  (wc/crawl clj-ws home)
-  ;(println "Cookies from clojure.org ") 
-  ;(wc/print-cookies clj-ws)
-  (is (wc/assert-cookie-names clj-ws "test" "master"))
-  (is (not (wc/assert-cookie-names clj-ws "does-not-exist-at-all"))))
-
-; this test depends on a website that i don't have any control over,  
-; this test is fragile, but better than no test
 (deftest redirect
   ; i setup this redirect at shorturl.com
   (let [redirect-site (wc/client "http://alturl.com/") 
@@ -71,5 +62,9 @@
 (deftest keys-values-to-strs
   (is (= {"blah" "blah" "1" "2" "three" "four"} 
          (wc/keys-values-to-strs {:blah :blah 1 2 "three" "four"}))))
+
+(deftest cookie-names
+  (wc/crawl clj-ws home)
+  (is (= (wc/cookie-names clj-ws) #{"test" "master" "slave"})))
    
 (run-tests)

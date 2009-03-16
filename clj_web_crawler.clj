@@ -115,19 +115,24 @@
 (defn cookies
   "Convience function to get the cookies from the client."
   [client]
-  (.. client (getState) (getCookies)))
+  (.. client getState getCookies))
 
 (defn print-cookies
   "Prints the cookies from the client."
   [client]
   (doseq [c (cookies client)] (println c)))
 
-(defn assert-cookie-names
-  "Returns true if all of the given cookie-names exist in the client."
-  [client & cookie-names]
-  (let [actual-cookies (cookies client)]
-    (every? (fn [exp-cookie-name] 
-              (some #(= exp-cookie-name (.getName %1)) actual-cookies))
-            cookie-names)))
+(defn cookie-map
+  [client]
+  (reduce (fn [ret cookie] (conj ret [(.getName cookie) (.getValue cookie)]))
+          {}
+          (cookies client)))
+
+(defn cookie-names
+  [client]
+  (set (keys (cookie-map client))))
+
+
+
 
 
