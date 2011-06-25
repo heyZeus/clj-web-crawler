@@ -2,8 +2,7 @@
   (:import (org.apache.commons.httpclient HttpClient NameValuePair URI HttpStatus)
            (org.apache.commons.httpclient.cookie CookiePolicy CookieSpec)
            (org.apache.commons.httpclient.methods GetMethod PostMethod DeleteMethod 
-                                                  TraceMethod HeadMethod PutMethod))
-  (:use [clojure.contrib.duck-streams :only (slurp*)]))
+                                                  TraceMethod HeadMethod PutMethod)))
 
 (defn redirect-location
   "Returns the redirection location string in the method, nil or false if
@@ -74,8 +73,7 @@
 (defn response-str
   "Returns the response from the method as a string."
   ([method]
-   ; uses slurp* here otherwise we get a annoying warning from commons-client
-   (slurp* (.getResponseBodyAsStream method)))
+   (slurp (.getResponseBodyAsStream method) :encoding (.getResponseCharSet method)))
   ([method client]
    (let [redirect (redirect-location method)
          new-method (if redirect (method redirect))]
