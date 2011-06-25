@@ -2,8 +2,7 @@
   (:import (org.apache.commons.httpclient HttpClient NameValuePair URI HttpStatus)
            (org.apache.commons.httpclient.cookie CookiePolicy CookieSpec)
            (org.apache.commons.httpclient.methods GetMethod PostMethod DeleteMethod 
-                                                  TraceMethod HeadMethod PutMethod))
-  (:use [clojure.contrib.duck-streams :only (slurp*)]))
+                                                  TraceMethod HeadMethod PutMethod)))
 
 (defn redirect-location
   "Returns the redirection location string in the method, nil or false if
@@ -71,18 +70,29 @@
        (finally (.releaseConnection ~method))))
   ([server] (crawl server (method "/"))))
 
-(defn response-str
-  "Returns the response from the method as a string."
+(defn response-reader
+  "Returns the response from the method as a java.io.Reader.
+
+  Should be used inside with-open to ensure the Reader is properly
+  closed."
   ([method]
-   ; uses slurp* here otherwise we get a annoying warning from commons-client
-   (slurp* (.getResponseBodyAsStream method)))
+     (clojure.java.io/reader (.getResponseBodyAsStream method) :encoding (.getResponseCharSet method)))
   ([method client]
    (let [redirect (redirect-location method)
          new-method (if redirect (method redirect))]
-     (if new-method 
+     (if new-method
        (crawl client new-method
-         (response-str new-method))
-       (response-str method)))))
+         (response-reader new-method))
+       (response-reader method)))))
+
+(defn response-str
+  "Returns the response from the method as a string."
+  ([method]
+     (with-open [reader (response-reader method)]
+       (slurp reader)))
+  ([method client]
+     (with-open [reader (response-reader method client)]
+       (slurp reader))))
 
 (defmulti crawl-response (fn [server method] [(class server) (class method)]))
 
